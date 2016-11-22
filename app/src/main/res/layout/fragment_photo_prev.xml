@@ -1,0 +1,25 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.stang.mediapreview.PhotoPrevFragment">
+
+
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:srcCompat="?android:attr/actionModeCopyDrawable"
+        android:id="@+id/imageView"
+        android:layout_weight="1"
+        android:scaleType="fitCenter" />
+
+    <android.support.v7.widget.RecyclerView
+        android:layout_below="@id/imageView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:id="@+id/recyclerView"
+        />
+</LinearLayout>
