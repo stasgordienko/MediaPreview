@@ -12,8 +12,9 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.TextView;
+
+import com.makeramen.roundedimageview.RoundedImageView;
 
 import java.util.ArrayList;
 
@@ -24,10 +25,11 @@ public class PhotoPrevFragment extends Fragment {
     public static final String TAG = MainActivity.TAG;
 
     private ArrayList<Uri> mPhotoList;
+    public View mPreviousSelectedView;
 
     private OnFragmentInteractionListener mListener;
     private RecyclerView mRecyclerView;
-    private ImageView mImageView;
+    private RoundedImageView mImageView;
     private PhotoViewAttacher mAttacher;
     private GridLayoutManager mGridLayoutManager;
     private PhotoRecyclerViewAdapter mPhotoAdapter;
@@ -51,7 +53,7 @@ public class PhotoPrevFragment extends Fragment {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_photo_prev, container, false);
 
-        mImageView = (ImageView) view.findViewById(R.id.imageView);
+        mImageView = (RoundedImageView) view.findViewById(R.id.imageView);
 
         // Set the Drawable displayed
         Drawable bitmap = getResources().getDrawable(android.R.drawable.btn_radio);
@@ -106,6 +108,7 @@ public class PhotoPrevFragment extends Fragment {
         private ArrayList<Uri> mPhotoList;
         private Context context;
 
+
         public PhotoRecyclerViewAdapter(Context context, ArrayList<Uri> itemList) {
             this.mPhotoList = itemList;
             this.context = context;
@@ -115,12 +118,13 @@ public class PhotoPrevFragment extends Fragment {
         public RecyclerViewHolders onCreateViewHolder(ViewGroup parent, int viewType) {
             View layoutView = LayoutInflater.from(parent.getContext()).inflate(R.layout.photo_card_view, null);
             RecyclerViewHolders rcv = new RecyclerViewHolders(layoutView);
+
             return rcv;
         }
 
         @Override
         public void onBindViewHolder(RecyclerViewHolders holder, int position) {
-            holder.mTextView.setText("image" + position);
+             //holder.mTextView.setText("image" + position);
             //url = mPhotoList.get(position);
             //imageLoader(holder.mImageView, url);
         }
@@ -134,19 +138,26 @@ public class PhotoPrevFragment extends Fragment {
 
     public class RecyclerViewHolders extends RecyclerView.ViewHolder implements View.OnClickListener {
 
-        public ImageView mImageView;
+        public RoundedImageView mImageView;
         public TextView mTextView;
 
         public RecyclerViewHolders(View itemView) {
             super(itemView);
             itemView.setOnClickListener(this);
-            mImageView = (ImageView) itemView.findViewById(R.id.photo);
-            mTextView = (TextView) itemView.findViewById(R.id.label);
+            mImageView = (RoundedImageView) itemView.findViewById(R.id.photo);
+            //mTextView = (TextView) itemView.findViewById(R.id.label);
         }
 
         @Override
         public void onClick(View v) {
             Log.d(TAG, "Image clicked. Adapter position = " + getAdapterPosition());
+
+            if(mPreviousSelectedView != null){
+                mPreviousSelectedView.setSelected(false);
+            }
+            v.setSelected(true);
+            mPreviousSelectedView = v;
+
         }
     }
 }

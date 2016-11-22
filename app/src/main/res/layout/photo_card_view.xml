@@ -1,43 +1,13 @@
-<android.support.v7.widget.CardView
-    xmlns:card_view="http://schemas.android.com/apk/res-auto"
+<?xml version="1.0" encoding="utf-8"?>
+<com.stang.mediapreview.SquareRoundedImageView
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/card_view"
-    android:layout_width="80dp"
-    android:layout_height="wrap_content"
-    card_view:cardUseCompatPadding="true"
-    card_view:cardCornerRadius="8dp"
-    android:layout_marginBottom="16dp">
-
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
-
-        <ImageView
-            android:id="@+id/photo"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:contentDescription="action_settings"
-            android:src="@android:drawable/btn_plus"
-            android:scaleType="fitCenter"
-            android:layout_weight="1"
-            />
-
-        <TextView
-            android:id="@+id/label"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textSize="13sp"
-            android:text="country_name"
-            android:textColor="@android:color/holo_orange_light"
-            android:gravity="center"
-            android:layout_below="@+id/photo"
-            android:paddingBottom="8dp"
-            android:paddingTop="8dp"
-            android:layout_alignParentBottom="true"
-            android:background="@android:color/holo_blue_dark"
-            android:layout_weight="1"
-            />
-
-    </RelativeLayout>
-
-</android.support.v7.widget.CardView>
+    android:id="@+id/photo"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:src="@drawable/p20161120142040"
+    app:riv_corner_radius="5dp"
+    app:riv_border_width="2dp"
+    app:riv_border_color="#ff0000"
+    android:padding="2dp"
+    android:scaleType="centerCrop" />

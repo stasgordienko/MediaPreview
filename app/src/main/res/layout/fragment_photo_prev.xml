@@ -7,13 +7,13 @@
     tools:context="com.stang.mediapreview.PhotoPrevFragment">
 
 
-    <ImageView
+    <com.makeramen.roundedimageview.RoundedImageView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         app:srcCompat="?android:attr/actionModeCopyDrawable"
         android:id="@+id/imageView"
         android:layout_weight="1"
-        android:scaleType="fitCenter" />
+        android:scaleType="centerCrop" />
 
     <android.support.v7.widget.RecyclerView
         android:layout_below="@id/imageView"
