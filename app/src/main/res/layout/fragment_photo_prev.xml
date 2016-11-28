@@ -4,19 +4,18 @@
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:weightSum="2"
     tools:context="com.stang.mediapreview.PhotoPrevFragment">
 
 
     <android.support.percent.PercentRelativeLayout
         android:layout_width="match_parent"
-        app:layout_aspectRatio="100%"
-        android:layout_height="wrap_content">
-        <com.stang.mediapreview.SquareRoundedImageView
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            app:square_match="match_width"
+        android:layout_height="wrap_content"
+
+        >
+        <com.makeramen.roundedimageview.RoundedImageView
+            app:layout_widthPercent="100%"
+            app:layout_aspectRatio="100%"
+
             android:id="@+id/imageView"
             android:scaleType="fitCenter"
             android:adjustViewBounds="false"
@@ -25,10 +24,7 @@
 
     <android.support.v7.widget.RecyclerView
         android:layout_marginTop="5dp"
-        android:layout_below="@id/imageView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:id="@+id/recyclerView"
-        />
+        android:id="@+id/recyclerView" />
 </LinearLayout>

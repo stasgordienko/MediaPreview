@@ -6,7 +6,6 @@ import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.provider.MediaStore;
 import android.support.design.widget.Snackbar;
-import android.support.design.widget.TabLayout;
 import android.support.v4.app.ActivityCompat;
 import android.app.LoaderManager;
 import android.support.v4.content.ContextCompat;
@@ -30,8 +29,8 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
     private PagerAdapter tabAdapter;
     private ViewPager viewPager;
 
-    public static ArrayList<String> mPhotoList;
-    public static ArrayList<String> mVideoList;
+    public volatile static ArrayList<String> mPhotoList;
+    public volatile static ArrayList<String> mVideoList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,10 +65,8 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
         Bundle bndl = new Bundle();
         bndl.putString(MediaListLoader.ARGS_MEDIALIST_URI, PHOTO_DATA_URI.toString());
 
-        getLoaderManager().initLoader(PHOTOLIST_LOADER_ID, bndl, mPhotoListLoaderCalbacks)
-                .forceLoad();
-        getLoaderManager().initLoader(VIDEOLIST_LOADER_ID, bndl, mVideoListLoaderCalbacks)
-                .forceLoad();
+        getLoaderManager().initLoader(PHOTOLIST_LOADER_ID, bndl, mPhotoListLoaderCallbacks).forceLoad();
+        //getLoaderManager().initLoader(VIDEOLIST_LOADER_ID, bndl, mVideoListLoaderCallbacks).forceLoad();
 
     }
 
@@ -107,7 +104,7 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
     }
 
 
-    private LoaderManager.LoaderCallbacks<ArrayList<String>> mPhotoListLoaderCalbacks = new LoaderManager.LoaderCallbacks<ArrayList<String>>() {
+    private LoaderManager.LoaderCallbacks<ArrayList<String>> mPhotoListLoaderCallbacks = new LoaderManager.LoaderCallbacks<ArrayList<String>>() {
         @Override
         public Loader<ArrayList<String>> onCreateLoader(int id, Bundle args) {
             Loader<ArrayList<String>> loader = null;
@@ -125,10 +122,13 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
         public void onLoadFinished(Loader<ArrayList<String>> loader, ArrayList<String> data) {
             //tabAdapter.photoTab.setMediaList(data);
             mPhotoList = data;
+            if(tabAdapter.photoTab != null) {
+                tabAdapter.photoTab.setMediaList(data);
+            }
         }
     };
 
-    private LoaderManager.LoaderCallbacks<ArrayList<String>> mVideoListLoaderCalbacks = new LoaderManager.LoaderCallbacks<ArrayList<String>>() {
+    private LoaderManager.LoaderCallbacks<ArrayList<String>> mVideoListLoaderCallbacks = new LoaderManager.LoaderCallbacks<ArrayList<String>>() {
         @Override
         public Loader<ArrayList<String>> onCreateLoader(int id, Bundle args) {
             Loader<ArrayList<String>> loader = null;
@@ -146,6 +146,9 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
         public void onLoadFinished(Loader<ArrayList<String>> loader, ArrayList<String> data) {
             //tabAdapter.videoTab.setMediaList(data);
             mVideoList = data;
+            if(tabAdapter.videoTab != null) {
+                tabAdapter.videoTab.setMediaList(data);
+            }
         }
     };
 

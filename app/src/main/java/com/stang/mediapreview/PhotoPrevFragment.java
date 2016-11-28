@@ -1,33 +1,19 @@
 package com.stang.mediapreview;
 
-import android.Manifest;
 import android.content.Context;
-import android.content.pm.PackageManager;
-import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.design.widget.Snackbar;
-import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.LoaderManager;
-import android.support.v4.content.ContextCompat;
-import android.support.v4.content.Loader;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
-import android.widget.TextView;
-import android.widget.Toast;
-
 import com.makeramen.roundedimageview.RoundedImageView;
 import com.nostra13.universalimageloader.core.ImageLoader;
-
 import java.util.ArrayList;
-
 import uk.co.senab.photoview.PhotoViewAttacher;
 
 
@@ -36,11 +22,11 @@ public class PhotoPrevFragment extends Fragment{
     public static final int MEDIALIST_LOADER_ID = 1;
     public static final int PERMISSION_REQUEST_CODE = 1;
 
-    private ArrayList<String> mPhotoList;
+    //private ArrayList<String> mPhotoList;
 
     private OnFragmentInteractionListener mListener;
     private RecyclerView mRecyclerView;
-    private SquareRoundedImageView mImageView;
+    private RoundedImageView mImageView;
     private PhotoViewAttacher mAttacher;
     private GridLayoutManager mGridLayoutManager;
     private PhotoRecyclerViewAdapter mPhotoAdapter;
@@ -64,25 +50,21 @@ public class PhotoPrevFragment extends Fragment{
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_photo_prev, container, false);
 
-        mImageView = (SquareRoundedImageView) view.findViewById(R.id.imageView);
+        mImageView = (RoundedImageView) view.findViewById(R.id.imageView);
 
-        // Set the Drawable displayed
-        //Drawable bitmap = getResources().getDrawable(android.R.drawable.btn_radio);
-        //mImageView.setImageDrawable(bitmap);
-
-        // Attach a PhotoViewAttacher, which takes care of all of the zooming functionality.
-        // (not needed unless you are going to change the drawable later)
         mAttacher = new PhotoViewAttacher(mImageView, true);
         //mAttacher.setScale(1);
-        //mAttacher.update();
+        mAttacher.update();
 
         mGridLayoutManager = new GridLayoutManager(getContext(), 5);
         mRecyclerView = (RecyclerView) view.findViewById(R.id.recyclerView);
         mRecyclerView.setHasFixedSize(true);
         mRecyclerView.setLayoutManager(mGridLayoutManager);
 
-        mPhotoAdapter = new PhotoRecyclerViewAdapter(getContext(), MainActivity.getPhotoList());
+        mPhotoAdapter = new PhotoRecyclerViewAdapter(getContext(), null);
         mRecyclerView.setAdapter(mPhotoAdapter);
+
+        setMediaList(MainActivity.getPhotoList());
 
         return view;
     }
@@ -143,7 +125,12 @@ public class PhotoPrevFragment extends Fragment{
 
         @Override
         public int getItemCount() {
-            return this.mPhotoList.size();
+            if(this.mPhotoList != null) {
+                return this.mPhotoList.size();
+            } else {
+                return 0;
+            }
+
         }
 
         public void setMediaList(ArrayList<String> list) {
@@ -156,13 +143,11 @@ public class PhotoPrevFragment extends Fragment{
     public class RecyclerViewHolders extends RecyclerView.ViewHolder implements View.OnClickListener {
 
         public RoundedImageView mListImageView;
-        public TextView mTextView;
 
         public RecyclerViewHolders(View itemView) {
             super(itemView);
             itemView.setOnClickListener(this);
             mListImageView = (RoundedImageView) itemView.findViewById(R.id.photo);
-            //mTextView = (TextView) itemView.findViewById(R.id.label);
         }
 
         @Override
@@ -175,7 +160,6 @@ public class PhotoPrevFragment extends Fragment{
 
             String url = mPhotoAdapter.mPhotoList.get(getAdapterPosition());
             ImageLoader.getInstance().displayImage(url, mImageView);
-            //mListImageView.setImageURI(Uri.parse(url));
 
             mAttacher.update();
         }
@@ -183,6 +167,10 @@ public class PhotoPrevFragment extends Fragment{
 
     public void setMediaList(ArrayList<String> list) {
         mPhotoAdapter.setMediaList(list);
+        if(list != null && list.size() > 0) {
+            String url = list.get(mSelectedPosition);
+            ImageLoader.getInstance().displayImage(url, mImageView);
+        }
     }
 
 }
