@@ -12,6 +12,8 @@ public class PagerAdapter extends FragmentStatePagerAdapter {
     public static final String TAG = MainActivity.TAG;
 
     int mNumOfTabs;
+    public PhotoPrevFragment photoTab;
+    public VideoPrevFragment videoTab;
 
     public PagerAdapter(FragmentManager fm) {
         super(fm);
@@ -23,10 +25,10 @@ public class PagerAdapter extends FragmentStatePagerAdapter {
 
         switch (position) {
             case 0:
-                PhotoPrevFragment photoTab = new PhotoPrevFragment();
+                photoTab = new PhotoPrevFragment();
                 return photoTab;
             case 1:
-                VideoPrevFragment videoTab = new VideoPrevFragment();
+                videoTab = new VideoPrevFragment();
                 return videoTab;
             default:
                 return null;

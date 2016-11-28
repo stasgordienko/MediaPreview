@@ -1,5 +1,8 @@
 <resources>
     <string name="app_name">MediaPreview</string>
 
+    <string name="permission_granted"> PERMISSION GRANTED </string>
+    <string name="storage_permission_needed"> STORAGE PERMISSION NEEDED </string>
+    <string name="grant"> GRANT </string>
 
 </resources>

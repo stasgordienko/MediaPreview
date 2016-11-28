@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+<declare-styleable name="SquareRoundedImageView">
+    <attr name="square_match" format="enum">
+        <enum name="none" value="0"/>
+        <enum name="match_width" value="1"/>
+        <enum name="match_height" value="2"/>
+    </attr>
+</declare-styleable>
+</resources>

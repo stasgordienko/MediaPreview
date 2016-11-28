@@ -8,6 +8,10 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import java.util.ArrayList;
+
+import static com.stang.mediapreview.PhotoPrevFragment.MEDIALIST_LOADER_ID;
+
 
 public class VideoPrevFragment extends Fragment {
     public static final String TAG = MainActivity.TAG;
@@ -53,5 +57,11 @@ public class VideoPrevFragment extends Fragment {
     public interface OnFragmentInteractionListener {
         // TODO: Update argument type and name
         void onFragmentInteraction(Uri uri);
+    }
+
+
+    public void setMediaList(ArrayList<String> list) {
+//        mVideoList = list;
+//        mVideoAdapter.setMediaList(list);
     }
 }

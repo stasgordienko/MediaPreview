@@ -6,8 +6,9 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:src="@drawable/p20161120142040"
+    app:square_match="match_width"
     app:riv_corner_radius="5dp"
-    app:riv_border_width="2dp"
-    app:riv_border_color="#ff0000"
-    android:padding="2dp"
+    app:riv_border_width="3dp"
+    app:riv_border_color="@color/media_list_selector"
+    android:padding="1dp"
     android:scaleType="centerCrop" />
