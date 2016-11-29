@@ -6,10 +6,19 @@ package com.stang.mediapreview;
 
 import android.app.Application;
 
+import com.nostra13.universalimageloader.cache.disc.impl.UnlimitedDiskCache;
+import com.nostra13.universalimageloader.cache.disc.naming.HashCodeFileNameGenerator;
+import com.nostra13.universalimageloader.cache.memory.impl.LruMemoryCache;
 import com.nostra13.universalimageloader.cache.memory.impl.UsingFreqLimitedMemoryCache;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
+import com.nostra13.universalimageloader.core.assist.QueueProcessingType;
+import com.nostra13.universalimageloader.core.decode.BaseImageDecoder;
+import com.nostra13.universalimageloader.core.download.BaseImageDownloader;
+import com.nostra13.universalimageloader.utils.StorageUtils;
+
+import java.io.File;
 
 /**
  * Created by Stanislav on 14.11.2016.
@@ -37,18 +46,27 @@ public class MediaPreviewApplication extends Application {
 
 
     private void initImageLoader() {
+        File cacheDir = StorageUtils.getCacheDirectory(getApplicationContext());
         ImageLoaderConfiguration config = new ImageLoaderConfiguration.Builder(getApplicationContext())
-                //.memoryCacheExtraOptions(480, 800) // width, height
-                //.discCacheExtraOptions(480, 800, Bitmap.CompressFormat.JPEG, 75) // width, height, compress format, quality
-                .threadPoolSize(5)
-                .threadPriority(Thread.MIN_PRIORITY + 2)
+                .memoryCacheExtraOptions(128, 128) // default = device screen dimensions
+                .diskCacheExtraOptions(480, 800, null)
+                //.taskExecutor(...)
+                //.taskExecutorForCachedImages(...)
+                .threadPoolSize(3) // default
+                .threadPriority(Thread.NORM_PRIORITY - 2) // default
+                .tasksProcessingOrder(QueueProcessingType.FIFO) // default
                 .denyCacheImageMultipleSizesInMemory()
-                .memoryCache(new UsingFreqLimitedMemoryCache(2 * 1024 * 1024)) // 2 Mb
-                //.discCache(new UnlimitedDiscCache(cacheDir))
-                //.discCacheFileNameGenerator(new HashCodeFileNameGenerator())
-                //.imageDownloader(new BaseImageDownloader(5 * 1000, 30 * 1000)) // connectTimeout (5 s), readTimeout (30 s)
-                .defaultDisplayImageOptions(options)
-                //.enableLogging()
+                .memoryCache(new LruMemoryCache(2 * 1024 * 1024))
+                .memoryCacheSize(2 * 1024 * 1024)
+                .memoryCacheSizePercentage(10) // default
+                .diskCache(new UnlimitedDiskCache(cacheDir)) // default
+                .diskCacheSize(50 * 1024 * 1024)
+                .diskCacheFileCount(100)
+                .diskCacheFileNameGenerator(new HashCodeFileNameGenerator()) // default
+                .imageDownloader(new BaseImageDownloader(getApplicationContext())) // default
+                //.imageDecoder(new BaseImageDecoder()) // default
+                .defaultDisplayImageOptions(DisplayImageOptions.createSimple()) // default
+                //.writeDebugLogs()
                 .build();
         ImageLoader.getInstance().init(config);
     }

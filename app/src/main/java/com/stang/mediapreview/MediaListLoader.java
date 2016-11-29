@@ -19,14 +19,17 @@ import java.util.ArrayList;
 public class MediaListLoader extends AsyncTaskLoader<ArrayList<String>> {
     public final static String TAG = MainActivity.TAG;
     public final static String ARGS_MEDIALIST_URI = "medialist_uri";
+    public final static String ARGS_MEDIALIST_COLUMN = "medialist_column";
 
     private Uri mDataUri;
+    private String mColumnName;
     private Context mContext;
 
     public MediaListLoader(Context context, Bundle args) {
         super(context);
         mContext = context;
         mDataUri = (args != null) ? Uri.parse((String) args.get(ARGS_MEDIALIST_URI)) : null;
+        mColumnName = (args != null) ? args.getString(ARGS_MEDIALIST_COLUMN) : null;
     }
 
     @Override
@@ -48,9 +51,9 @@ public class MediaListLoader extends AsyncTaskLoader<ArrayList<String>> {
         return mediaList;
     }
 
-    public static String parseCursor(Cursor cursor) {
+    public String parseCursor(Cursor cursor) {
         String filename = "file://" + cursor.getString(cursor
-                .getColumnIndex(MediaStore.Images.Media.DATA));
+                .getColumnIndex(mColumnName));
         Log.d(TAG, "LOADER, file: " + filename);
         return filename;
     }

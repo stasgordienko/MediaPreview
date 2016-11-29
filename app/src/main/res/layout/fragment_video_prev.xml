@@ -1,13 +1,36 @@
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
     tools:context="com.stang.mediapreview.VideoPrevFragment">
 
-    <!-- TODO: Update blank fragment layout -->
-    <TextView
+    <android.support.percent.PercentRelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        >
+
+        <TextureView
+            app:layout_widthPercent="100%"
+            app:layout_aspectRatio="100%"
+            android:id="@+id/videoView" />
+
+    </android.support.percent.PercentRelativeLayout>
+
+
+    <SeekBar
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/seekBar"
+        />
+
+
+    <android.support.v7.widget.RecyclerView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:text="video" />
+        android:id="@+id/videoRecyclerView"
+        />
 
-</FrameLayout>
+
+</LinearLayout>

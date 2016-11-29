@@ -13,6 +13,7 @@ import android.support.v4.view.ViewPager;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 
+import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
@@ -20,7 +21,7 @@ import java.util.ArrayList;
 
 
 public class MainActivity extends AppCompatActivity implements ActivityCompat.OnRequestPermissionsResultCallback{
-    public static final String TAG = "MEDIAPREVIEW";
+    public static final String TAG = "APP";
     public final static Uri PHOTO_DATA_URI = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
     public final static Uri VIDEO_DATA_URI = MediaStore.Video.Media.EXTERNAL_CONTENT_URI;
     public static final int PHOTOLIST_LOADER_ID = 1;
@@ -62,11 +63,16 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
     }
 
     public void loadMediaListFromExtStorage(){
-        Bundle bndl = new Bundle();
-        bndl.putString(MediaListLoader.ARGS_MEDIALIST_URI, PHOTO_DATA_URI.toString());
+        Bundle bndl_photo = new Bundle();
+        bndl_photo.putString(MediaListLoader.ARGS_MEDIALIST_URI, PHOTO_DATA_URI.toString());
+        bndl_photo.putString(MediaListLoader.ARGS_MEDIALIST_COLUMN, MediaStore.Images.Media.DATA);
+        getLoaderManager().initLoader(PHOTOLIST_LOADER_ID, bndl_photo, mPhotoListLoaderCallbacks).forceLoad();
 
-        getLoaderManager().initLoader(PHOTOLIST_LOADER_ID, bndl, mPhotoListLoaderCallbacks).forceLoad();
-        //getLoaderManager().initLoader(VIDEOLIST_LOADER_ID, bndl, mVideoListLoaderCallbacks).forceLoad();
+
+        Bundle bndl_video = new Bundle();
+        bndl_video.putString(MediaListLoader.ARGS_MEDIALIST_URI, VIDEO_DATA_URI.toString());
+        bndl_video.putString(MediaListLoader.ARGS_MEDIALIST_COLUMN, MediaStore.Video.Media.DATA);
+        getLoaderManager().initLoader(VIDEOLIST_LOADER_ID, bndl_video, mVideoListLoaderCallbacks).forceLoad();
 
     }
 
@@ -110,6 +116,7 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
             Loader<ArrayList<String>> loader = null;
             if (id == PHOTOLIST_LOADER_ID) {
                 loader = new MediaListLoader(getApplicationContext(), args);
+                Log.d(TAG, "PhotoList loader starts...");
             }
             return loader;
         }
@@ -120,10 +127,10 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
 
         @Override
         public void onLoadFinished(Loader<ArrayList<String>> loader, ArrayList<String> data) {
-            //tabAdapter.photoTab.setMediaList(data);
             mPhotoList = data;
             if(tabAdapter.photoTab != null) {
                 tabAdapter.photoTab.setMediaList(data);
+                Log.d(TAG, "PhotoList loader ENDS...");
             }
         }
     };
@@ -134,6 +141,7 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
             Loader<ArrayList<String>> loader = null;
             if (id == VIDEOLIST_LOADER_ID) {
                 loader = new MediaListLoader(getApplicationContext(), args);
+                Log.d(TAG, "VideoList loader starts...");
             }
             return loader;
         }
@@ -144,10 +152,10 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
 
         @Override
         public void onLoadFinished(Loader<ArrayList<String>> loader, ArrayList<String> data) {
-            //tabAdapter.videoTab.setMediaList(data);
             mVideoList = data;
             if(tabAdapter.videoTab != null) {
                 tabAdapter.videoTab.setMediaList(data);
+                Log.d(TAG, "VideoList loader ENDS...");
             }
         }
     };

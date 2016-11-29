@@ -55,12 +55,12 @@ public class PhotoPrevFragment extends Fragment{
         mImageView = (RoundedImageView) view.findViewById(R.id.imageView);
 
         mAttacher = new PhotoViewAttacher(mImageView, true);
-        mAttacher.setMinimumScale(1);
+        //mAttacher.setMinimumScale(1);
         //mAttacher.setScale(1);
         mAttacher.update();
 
         mGridLayoutManager = new GridLayoutManager(getContext(), 5);
-        mRecyclerView = (RecyclerView) view.findViewById(R.id.recyclerView);
+        mRecyclerView = (RecyclerView) view.findViewById(R.id.photoRecyclerView);
         mRecyclerView.setHasFixedSize(true);
         mRecyclerView.setLayoutManager(mGridLayoutManager);
 
@@ -113,7 +113,7 @@ public class PhotoPrevFragment extends Fragment{
 
         @Override
         public RecyclerViewHolders onCreateViewHolder(ViewGroup parent, int viewType) {
-            View layoutView = LayoutInflater.from(parent.getContext()).inflate(R.layout.photo_card_view, null);
+            View layoutView = LayoutInflater.from(getContext()).inflate(R.layout.photo_card_view, null);
             RecyclerViewHolders rcv = new RecyclerViewHolders(layoutView);
 
             return rcv;
@@ -155,26 +155,31 @@ public class PhotoPrevFragment extends Fragment{
         @Override
         public void onClick(View v) {
             v.setSelected(true);
+            //Log.d(TAG, "OnClick viewId=" + v.getId() + " photo viewId=" + R.id.photo);
             mPhotoAdapter.notifyItemChanged(mSelectedPosition);
             mSelectedPosition = getAdapterPosition();
-            setImage(mImageView, getAdapterPosition());
+
+            mImageView.setImageURI(Uri.parse(mPhotoAdapter.mPhotoList.get(mSelectedPosition)));
+            //setImage(mImageView, getAdapterPosition());
         }
     }
 
     public void setMediaList(ArrayList<String> mediaList) {
         mPhotoAdapter.setMediaList(mediaList);
         if(mediaList != null && mediaList.size() > 0) {
-            setImage(mImageView, mSelectedPosition);
+            mImageView.setImageURI(Uri.parse(mPhotoAdapter.mPhotoList.get(mSelectedPosition)));
+            //setImage(mImageView, mSelectedPosition);
         }
     }
 
+    public ArrayList<String> getMediaList() {
+        return mPhotoAdapter.mPhotoList;
+    }
 
     public void setImage(ImageView imageView, int position) {
         String url = mPhotoAdapter.mPhotoList.get(position);
-
         ImageLoader.getInstance().displayImage(url, imageView);
         //imageView.setImageURI(Uri.parse(url));
-
-        mAttacher.update();
+       mAttacher.update();
     }
 }
