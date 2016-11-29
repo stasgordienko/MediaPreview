@@ -2,6 +2,9 @@ package com.stang.mediapreview;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.SurfaceTexture;
+import android.media.AudioManager;
+import android.media.MediaPlayer;
 import android.media.ThumbnailUtils;
 import android.net.Uri;
 import android.os.Bundle;
@@ -11,14 +14,19 @@ import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Surface;
 import android.view.TextureView;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.MediaController;
 
 import com.makeramen.roundedimageview.RoundedImageView;
 import com.nostra13.universalimageloader.core.ImageLoader;
 
+import org.florescu.android.rangeseekbar.RangeSeekBar;
+
+import java.io.IOException;
 import java.util.ArrayList;
 
 import uk.co.senab.photoview.PhotoViewAttacher;
@@ -34,9 +42,11 @@ public class VideoPrevFragment extends Fragment {
     private TextureView mVideoView;
     private GridLayoutManager mGridLayoutManager;
     private VideoPrevFragment.VideoRecyclerViewAdapter mVideoAdapter;
+    private MediaPlayer mMediaPlayer;
 
     private int mSelectedPosition = 0;
     private boolean isPlaying = false;
+    private boolean isPrepared = false;
 
     public VideoPrevFragment() {
         // Required empty public constructor
@@ -54,6 +64,57 @@ public class VideoPrevFragment extends Fragment {
                 setPlaying(!isPlaying);
             }
         });
+        mVideoView.setSurfaceTextureListener(new TextureView.SurfaceTextureListener() {
+            @Override
+            public void onSurfaceTextureAvailable(SurfaceTexture surfaceTexture, int width, int height) {
+                Surface videoSurface = new Surface(surfaceTexture);
+                try {
+                    if(mMediaPlayer == null) {
+                        mMediaPlayer= new MediaPlayer();
+                    }
+                    //mMediaPlayer.setDataSource("http://");
+                    mMediaPlayer.setSurface(videoSurface);
+                    //mMediaPlayer.prepare();
+                    //mMediaPlayer.setOnBufferingUpdateListener(this);
+                    //mMediaPlayer.setOnCompletionListener(this);
+                    //mMediaPlayer.setOnPreparedListener(this);
+                    //mMediaPlayer.setOnVideoSizeChangedListener(this);
+                    mMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+                    //mMediaPlayer.start();
+                } catch (IllegalArgumentException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                } catch (SecurityException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                } catch (IllegalStateException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+            }
+
+            @Override
+            public void onSurfaceTextureSizeChanged(SurfaceTexture surface, int width, int height) {
+
+            }
+
+            @Override
+            public boolean onSurfaceTextureDestroyed(SurfaceTexture surface) {
+                return false;
+            }
+
+            @Override
+            public void onSurfaceTextureUpdated(SurfaceTexture surface) {
+
+            }
+        });
+
+
+        RangeSeekBar<Integer> rangeSeekBar = (RangeSeekBar<Integer>) view.findViewById(R.id.seekBar);
+        // Set the range
+        rangeSeekBar.setRangeValues(15, 90);
+        rangeSeekBar.setSelectedMinValue(20);
+        rangeSeekBar.setSelectedMaxValue(88);
 
         mGridLayoutManager = new GridLayoutManager(getContext(), 5);
         mRecyclerView = (RecyclerView) view.findViewById(R.id.videoRecyclerView);
@@ -70,6 +131,13 @@ public class VideoPrevFragment extends Fragment {
 
     private void setPlaying(boolean statePlaying) {
         isPlaying = statePlaying;
+        if(mMediaPlayer != null && isPrepared) {
+            if(mMediaPlayer.isPlaying()) {
+                mMediaPlayer.pause();
+            } else {
+                mMediaPlayer.start();
+            }
+        }
         Log.d(TAG, "setPlaying " + statePlaying);
         //
     }
@@ -162,10 +230,24 @@ public class VideoPrevFragment extends Fragment {
 
         @Override
         public void onClick(View v) {
+            isPrepared = false;
             v.setSelected(true);
             mVideoAdapter.notifyItemChanged(mSelectedPosition);
             mSelectedPosition = getAdapterPosition();
             Log.d(TAG, "OnClick");
+            if(mMediaPlayer != null) {
+                mMediaPlayer.reset();
+                try {
+                    mMediaPlayer.setDataSource(mVideoAdapter.mVideoList.get(mSelectedPosition));
+                    //mMediaPlayer.setSurface(videoSurface);
+                    mMediaPlayer.prepare();
+                    isPrepared = true;
+                } catch (Exception e) {
+                    // todo
+                }
+
+            }
+
             //////mVideoView.setImageURI(Uri.parse(mVideoAdapter.mVideoList.get(mSelectedPosition)));
         }
     }
