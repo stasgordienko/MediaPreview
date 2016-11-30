@@ -62,20 +62,6 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
         loadMediaListFromExtStorage();
     }
 
-    public void loadMediaListFromExtStorage(){
-        Bundle bndl_photo = new Bundle();
-        bndl_photo.putString(MediaListLoader.ARGS_MEDIALIST_URI, PHOTO_DATA_URI.toString());
-        bndl_photo.putString(MediaListLoader.ARGS_MEDIALIST_COLUMN, MediaStore.Images.Media.DATA);
-        getLoaderManager().initLoader(PHOTOLIST_LOADER_ID, bndl_photo, mPhotoListLoaderCallbacks).forceLoad();
-
-
-        Bundle bndl_video = new Bundle();
-        bndl_video.putString(MediaListLoader.ARGS_MEDIALIST_URI, VIDEO_DATA_URI.toString());
-        bndl_video.putString(MediaListLoader.ARGS_MEDIALIST_COLUMN, MediaStore.Video.Media.DATA);
-        getLoaderManager().initLoader(VIDEOLIST_LOADER_ID, bndl_video, mVideoListLoaderCallbacks).forceLoad();
-
-    }
-
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions,
                                            int[] grantResults) {
@@ -109,6 +95,20 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
                 .show();
     }
 
+
+    public void loadMediaListFromExtStorage(){
+        Bundle bndl_photo = new Bundle();
+        bndl_photo.putString(MediaListLoader.ARGS_MEDIALIST_URI, PHOTO_DATA_URI.toString());
+        bndl_photo.putString(MediaListLoader.ARGS_MEDIALIST_COLUMN, MediaStore.Images.Media.DATA);
+        getLoaderManager().initLoader(PHOTOLIST_LOADER_ID, bndl_photo, mPhotoListLoaderCallbacks).forceLoad();
+
+
+        Bundle bndl_video = new Bundle();
+        bndl_video.putString(MediaListLoader.ARGS_MEDIALIST_URI, VIDEO_DATA_URI.toString());
+        bndl_video.putString(MediaListLoader.ARGS_MEDIALIST_COLUMN, MediaStore.Video.Media.DATA);
+        getLoaderManager().initLoader(VIDEOLIST_LOADER_ID, bndl_video, mVideoListLoaderCallbacks).forceLoad();
+
+    }
 
     private LoaderManager.LoaderCallbacks<ArrayList<String>> mPhotoListLoaderCallbacks = new LoaderManager.LoaderCallbacks<ArrayList<String>>() {
         @Override
