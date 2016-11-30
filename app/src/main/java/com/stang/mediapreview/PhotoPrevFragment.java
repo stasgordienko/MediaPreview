@@ -67,7 +67,7 @@ public class PhotoPrevFragment extends Fragment{
         mPhotoAdapter = new PhotoRecyclerViewAdapter(getContext(), null);
         mRecyclerView.setAdapter(mPhotoAdapter);
 
-        setMediaList(MainActivity.getPhotoList());
+        //setMediaList(MainActivity.getPhotoList());
 
         return view;
     }

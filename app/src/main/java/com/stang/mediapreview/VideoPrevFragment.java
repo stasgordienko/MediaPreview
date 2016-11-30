@@ -8,6 +8,7 @@ import android.media.MediaPlayer;
 import android.media.ThumbnailUtils;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
 import android.provider.MediaStore;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.GridLayoutManager;
@@ -28,6 +29,7 @@ import java.util.ArrayList;
 
 public class VideoPrevFragment extends Fragment {
     public static final String TAG = MainActivity.TAG;
+    public static final int UPDATER_DELAY = 1000;
 
     private OnFragmentInteractionListener mListener;
     private RecyclerView mRecyclerView;
@@ -35,14 +37,30 @@ public class VideoPrevFragment extends Fragment {
     private GridLayoutManager mGridLayoutManager;
     private VideoPrevFragment.VideoRecyclerViewAdapter mVideoAdapter;
     private MediaPlayer mMediaPlayer;
+    private RangeSeekBar<Integer> rangeSeekBar;
+    private int mStartPosition = 0;
 
     private int mSelectedPosition = 0;
     private boolean isPlaying = false;
-    private boolean isPrepared = false;
+    private boolean isPlayerPrepared = false;
+
+    private Handler mHandler = new Handler();
 
     public VideoPrevFragment() {
         // Required empty public constructor
     }
+
+    private final Runnable mUpdater = new Runnable() {
+        public void run() {
+            try {
+                if (isPlayerPrepared && mMediaPlayer.isPlaying()) {
+                    update();
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    };
 
 
     @Override
@@ -67,7 +85,13 @@ public class VideoPrevFragment extends Fragment {
                     mMediaPlayer.setSurface(videoSurface);
                     mMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
                     //mMediaPlayer.setOnBufferingUpdateListener(this);
-                    //mMediaPlayer.setOnCompletionListener(this);
+                    mMediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                        @Override
+                        public void onCompletion(MediaPlayer mp) {
+                            isPlaying = false;
+                            mHandler.removeCallbacks(mUpdater);
+                        }
+                    });
                     //mMediaPlayer.setOnPreparedListener(this);
                     //mMediaPlayer.setOnVideoSizeChangedListener(this);
                 } catch (IllegalArgumentException e) {
@@ -99,11 +123,20 @@ public class VideoPrevFragment extends Fragment {
         });
 
 
-        RangeSeekBar<Integer> rangeSeekBar = (RangeSeekBar<Integer>) view.findViewById(R.id.seekBar);
+        rangeSeekBar = (RangeSeekBar<Integer>) view.findViewById(R.id.seekBar);
         // Set the range
         rangeSeekBar.setRangeValues(0, 100);
         rangeSeekBar.setSelectedMinValue(0);
         rangeSeekBar.setSelectedMaxValue(100);
+        rangeSeekBar.setOnRangeSeekBarChangeListener(new RangeSeekBar.OnRangeSeekBarChangeListener<Integer>() {
+            @Override
+            public void onRangeSeekBarValuesChanged(RangeSeekBar<?> bar, Integer minValue, Integer maxValue) {
+                if(mStartPosition != rangeSeekBar.getSelectedMinValue()) {
+                    mStartPosition = rangeSeekBar.getSelectedMinValue();
+                    seekToStart();
+                }
+            }
+        });
 
         mGridLayoutManager = new GridLayoutManager(getContext(), 5);
         mRecyclerView = (RecyclerView) view.findViewById(R.id.videoRecyclerView);
@@ -118,19 +151,43 @@ public class VideoPrevFragment extends Fragment {
         return view;
     }
 
+    private void update() {
+        int endPosition = (int)((float)mMediaPlayer.getDuration() * ((float)rangeSeekBar.getSelectedMaxValue() / 100));
+        if(mMediaPlayer.getCurrentPosition() < endPosition) {
+            mHandler.removeCallbacks(mUpdater);
+            mHandler.postDelayed(mUpdater, UPDATER_DELAY);
+        } else {
+            setPlaying(false);
+        }
+
+    }
+
     private void setPlaying(boolean statePlaying) {
-        isPlaying = statePlaying;
-        if(mMediaPlayer != null && isPrepared) {
+        if(mMediaPlayer != null && isPlayerPrepared) {
+            isPlaying = statePlaying;
             if(mMediaPlayer.isPlaying()) {
                 mMediaPlayer.pause();
             } else {
+                int endPosition = (int)((float)mMediaPlayer.getDuration() * ((float)rangeSeekBar.getSelectedMaxValue() / 100));
+                if(mMediaPlayer.getCurrentPosition() >= endPosition) {
+                    int startPosition = (int)((float)mMediaPlayer.getDuration() * ((float)rangeSeekBar.getSelectedMinValue() / 100));
+                    mMediaPlayer.seekTo(startPosition);
+                }
                 mMediaPlayer.start();
+                mHandler.removeCallbacks(mUpdater);
+                mHandler.post(mUpdater);
             }
         }
         Log.d(TAG, "setPlaying " + statePlaying);
         //
     }
 
+    private void seekToStart() {
+        if(isPlayerPrepared) {
+            int seekPosition = (int)((float)mMediaPlayer.getDuration() * ((float)mStartPosition / 100));
+            mMediaPlayer.seekTo(seekPosition);
+        }
+    }
 
     // TODO: Rename method, update argument and hook method into UI event
     public void onButtonPressed(Uri uri) {
@@ -214,36 +271,43 @@ public class VideoPrevFragment extends Fragment {
 
         @Override
         public void onClick(View v) {
-            boolean startPlayAfterPrepare = (isPrepared && mMediaPlayer.isPlaying());
-            isPrepared = false;
             v.setSelected(true);
             mVideoAdapter.notifyItemChanged(mSelectedPosition);
             mSelectedPosition = getAdapterPosition();
-            if(mMediaPlayer != null) {
-                mMediaPlayer.reset();
-                try {
-                    mMediaPlayer.setDataSource(mVideoAdapter.mVideoList.get(mSelectedPosition));
-                    mMediaPlayer.prepare();
-                    isPrepared = true;
-                    if(startPlayAfterPrepare) {
-                        mMediaPlayer.start();
-                    } else {
-                        mMediaPlayer.seekTo(0);
-                    }
-                } catch (Exception e) {
-                    // todo
-                    isPrepared = false;
+            play();
+    }
+
+     }
+
+    public void play(){
+        boolean startPlayAfterPrepare = (isPlayerPrepared && mMediaPlayer.isPlaying());
+        isPlayerPrepared = false;
+        if(mMediaPlayer != null) {
+            mMediaPlayer.reset();
+            try {
+                mMediaPlayer.setDataSource(mVideoAdapter.mVideoList.get(mSelectedPosition));
+                mMediaPlayer.prepare();
+                int startPosition = (int)((float)mMediaPlayer.getDuration() * ((float)rangeSeekBar.getSelectedMinValue() / 100));
+                isPlayerPrepared = true;
+                mMediaPlayer.seekTo(startPosition);
+                if(startPlayAfterPrepare) {
+                    mMediaPlayer.start();
+
                 }
+            } catch (Exception e) {
+                // todo
+                isPlayerPrepared = false;
             }
         }
     }
 
     public void setMediaList(ArrayList<String> mediaList) {
-        mVideoAdapter.setMediaList(mediaList);
         if(mediaList != null && mediaList.size() > 0) {
-            /////mVideoView.setImageURI(Uri.parse(mVideoAdapter.mPhotoList.get(mSelectedPosition)));
-            ////setImage(mImageView, mSelectedPosition);
+            mSelectedPosition = 0;
+            mVideoAdapter.setMediaList(mediaList);
+            play();
         }
+
     }
 
     public void setThumbnail(ImageView imageView, int position) {
