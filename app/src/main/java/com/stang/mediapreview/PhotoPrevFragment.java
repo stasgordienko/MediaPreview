@@ -7,14 +7,16 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.makeramen.roundedimageview.RoundedImageView;
 import com.nostra13.universalimageloader.core.ImageLoader;
+
 import java.util.ArrayList;
 import uk.co.senab.photoview.PhotoViewAttacher;
 
@@ -46,6 +48,7 @@ public class PhotoPrevFragment extends Fragment{
     }
 
 
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -67,7 +70,7 @@ public class PhotoPrevFragment extends Fragment{
         mPhotoAdapter = new PhotoRecyclerViewAdapter(getContext(), null);
         mRecyclerView.setAdapter(mPhotoAdapter);
 
-        //setMediaList(MainActivity.getPhotoList());
+        setMediaList(MainActivity.getPhotoList());
 
         return view;
     }
@@ -121,7 +124,7 @@ public class PhotoPrevFragment extends Fragment{
 
         @Override
         public void onBindViewHolder(RecyclerViewHolders holder, int position) {
-            setImage(holder.mListImageView, position);
+            setImageThumbnail(holder.mListImageView, position);
             holder.mListImageView.setSelected(position == mSelectedPosition);
         }
 
@@ -160,15 +163,16 @@ public class PhotoPrevFragment extends Fragment{
             mSelectedPosition = getAdapterPosition();
 
             mImageView.setImageURI(Uri.parse(mPhotoAdapter.mPhotoList.get(mSelectedPosition)));
-            //setImage(mImageView, getAdapterPosition());
+            mAttacher.update();
         }
     }
 
     public void setMediaList(ArrayList<String> mediaList) {
         mPhotoAdapter.setMediaList(mediaList);
         if(mediaList != null && mediaList.size() > 0) {
-            mImageView.setImageURI(Uri.parse(mPhotoAdapter.mPhotoList.get(mSelectedPosition)));
-            //setImage(mImageView, mSelectedPosition);
+            String imgUrl = mPhotoAdapter.mPhotoList.get(mSelectedPosition);
+            mImageView.setImageURI(Uri.parse(imgUrl));
+            mAttacher.update();
         }
     }
 
@@ -176,10 +180,14 @@ public class PhotoPrevFragment extends Fragment{
         return mPhotoAdapter.mPhotoList;
     }
 
-    public void setImage(ImageView imageView, int position) {
-        String url = mPhotoAdapter.mPhotoList.get(position);
-        ImageLoader.getInstance().displayImage(url, imageView);
+    public void setImageThumbnail(ImageView imageView, int position) {
+        String imgUrl = mPhotoAdapter.mPhotoList.get(position);
+        ImageLoader.getInstance().displayImage(imgUrl, imageView);
         //imageView.setImageURI(Uri.parse(url));
-       mAttacher.update();
+//        Glide.with(getContext()).load(Uri.parse(imgUrl).toString())
+//                .thumbnail(0.2f)
+//                .crossFade()
+//                .diskCacheStrategy(DiskCacheStrategy.NONE)
+//                .into(imageView);
     }
 }

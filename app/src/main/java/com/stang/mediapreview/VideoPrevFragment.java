@@ -21,10 +21,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.makeramen.roundedimageview.RoundedImageView;
 import org.florescu.android.rangeseekbar.RangeSeekBar;
 import java.util.ArrayList;
-
 
 
 public class VideoPrevFragment extends Fragment {
@@ -37,7 +38,8 @@ public class VideoPrevFragment extends Fragment {
     private GridLayoutManager mGridLayoutManager;
     private VideoPrevFragment.VideoRecyclerViewAdapter mVideoAdapter;
     private MediaPlayer mMediaPlayer;
-    private RangeSeekBar<Integer> rangeSeekBar;
+    private Surface mVideoSurface;
+    private RangeSeekBar<Integer> mRangeSeekBar;
     private int mStartPosition = 0;
 
     private int mSelectedPosition = 0;
@@ -77,14 +79,13 @@ public class VideoPrevFragment extends Fragment {
         mVideoView.setSurfaceTextureListener(new TextureView.SurfaceTextureListener() {
             @Override
             public void onSurfaceTextureAvailable(SurfaceTexture surfaceTexture, int width, int height) {
-                Surface videoSurface = new Surface(surfaceTexture);
+                mVideoSurface = new Surface(surfaceTexture);
                 try {
                     if(mMediaPlayer == null) {
                         mMediaPlayer= new MediaPlayer();
                     }
-                    mMediaPlayer.setSurface(videoSurface);
+                    mMediaPlayer.setSurface(mVideoSurface);
                     mMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
-                    //mMediaPlayer.setOnBufferingUpdateListener(this);
                     mMediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
                         @Override
                         public void onCompletion(MediaPlayer mp) {
@@ -92,6 +93,7 @@ public class VideoPrevFragment extends Fragment {
                             mHandler.removeCallbacks(mUpdater);
                         }
                     });
+                    //mMediaPlayer.setOnBufferingUpdateListener(this);
                     //mMediaPlayer.setOnPreparedListener(this);
                     //mMediaPlayer.setOnVideoSizeChangedListener(this);
                 } catch (IllegalArgumentException e) {
@@ -123,16 +125,16 @@ public class VideoPrevFragment extends Fragment {
         });
 
 
-        rangeSeekBar = (RangeSeekBar<Integer>) view.findViewById(R.id.seekBar);
+        mRangeSeekBar = (RangeSeekBar<Integer>) view.findViewById(R.id.seekBar);
         // Set the range
-        rangeSeekBar.setRangeValues(0, 100);
-        rangeSeekBar.setSelectedMinValue(0);
-        rangeSeekBar.setSelectedMaxValue(100);
-        rangeSeekBar.setOnRangeSeekBarChangeListener(new RangeSeekBar.OnRangeSeekBarChangeListener<Integer>() {
+        mRangeSeekBar.setRangeValues(0, 100);
+        mRangeSeekBar.setSelectedMinValue(0);
+        mRangeSeekBar.setSelectedMaxValue(100);
+        mRangeSeekBar.setOnRangeSeekBarChangeListener(new RangeSeekBar.OnRangeSeekBarChangeListener<Integer>() {
             @Override
             public void onRangeSeekBarValuesChanged(RangeSeekBar<?> bar, Integer minValue, Integer maxValue) {
-                if(mStartPosition != rangeSeekBar.getSelectedMinValue()) {
-                    mStartPosition = rangeSeekBar.getSelectedMinValue();
+                if(mStartPosition != mRangeSeekBar.getSelectedMinValue()) {
+                    mStartPosition = mRangeSeekBar.getSelectedMinValue();
                     seekToStart();
                 }
             }
@@ -146,13 +148,13 @@ public class VideoPrevFragment extends Fragment {
         mVideoAdapter = new VideoRecyclerViewAdapter(getContext(), null);
         mRecyclerView.setAdapter(mVideoAdapter);
 
-        //setMediaList(MainActivity.getVideoList());
+        setMediaList(MainActivity.getVideoList());
 
         return view;
     }
 
     private void update() {
-        int endPosition = (int)((float)mMediaPlayer.getDuration() * ((float)rangeSeekBar.getSelectedMaxValue() / 100));
+        int endPosition = (int)((float)mMediaPlayer.getDuration() * ((float) mRangeSeekBar.getSelectedMaxValue() / 100));
         if(mMediaPlayer.getCurrentPosition() < endPosition) {
             mHandler.removeCallbacks(mUpdater);
             mHandler.postDelayed(mUpdater, UPDATER_DELAY);
@@ -168,9 +170,9 @@ public class VideoPrevFragment extends Fragment {
             if(mMediaPlayer.isPlaying()) {
                 mMediaPlayer.pause();
             } else {
-                int endPosition = (int)((float)mMediaPlayer.getDuration() * ((float)rangeSeekBar.getSelectedMaxValue() / 100));
+                int endPosition = (int)((float)mMediaPlayer.getDuration() * ((float) mRangeSeekBar.getSelectedMaxValue() / 100));
                 if(mMediaPlayer.getCurrentPosition() >= endPosition) {
-                    int startPosition = (int)((float)mMediaPlayer.getDuration() * ((float)rangeSeekBar.getSelectedMinValue() / 100));
+                    int startPosition = (int)((float)mMediaPlayer.getDuration() * ((float) mRangeSeekBar.getSelectedMinValue() / 100));
                     mMediaPlayer.seekTo(startPosition);
                 }
                 mMediaPlayer.start();
@@ -238,8 +240,15 @@ public class VideoPrevFragment extends Fragment {
 
         @Override
         public void onBindViewHolder(VideoPrevFragment.RecyclerViewHolders holder, int position) {
-            setThumbnail(holder.mListImageView, position);
+            //setThumbnail(holder.mListImageView, position);
             holder.mListImageView.setSelected(position == mSelectedPosition);
+            String imgUrl =  mVideoAdapter.mVideoList.get(position);
+            Log.d(TAG, "onBindViewHolder, position=" + position + " url=" + imgUrl);
+            Glide.with(getContext()).load(Uri.parse(imgUrl).toString())
+                    .thumbnail(0.5f)
+                    .crossFade()
+                    .diskCacheStrategy(DiskCacheStrategy.NONE)
+                    .into(holder.mListImageView);
         }
 
         @Override
@@ -287,7 +296,16 @@ public class VideoPrevFragment extends Fragment {
             try {
                 mMediaPlayer.setDataSource(mVideoAdapter.mVideoList.get(mSelectedPosition));
                 mMediaPlayer.prepare();
-                int startPosition = (int)((float)mMediaPlayer.getDuration() * ((float)rangeSeekBar.getSelectedMinValue() / 100));
+
+                //calc video surface view size
+                int videoWidth = mMediaPlayer.getVideoWidth();
+                int videoHeight = mMediaPlayer.getVideoHeight();
+                android.view.ViewGroup.LayoutParams lp = mVideoView.getLayoutParams();
+                int screenWidth = mVideoView.getWidth();
+                lp.height = (int) (((float)videoHeight / (float)videoWidth) * (float)screenWidth);
+                mVideoView.setLayoutParams(lp);
+
+                int startPosition = (int)((float)mMediaPlayer.getDuration() * ((float) mRangeSeekBar.getSelectedMinValue() / 100));
                 isPlayerPrepared = true;
                 mMediaPlayer.seekTo(startPosition);
                 if(startPlayAfterPrepare) {
@@ -301,20 +319,20 @@ public class VideoPrevFragment extends Fragment {
         }
     }
 
+
+
     public void setMediaList(ArrayList<String> mediaList) {
         if(mediaList != null && mediaList.size() > 0) {
             mSelectedPosition = 0;
             mVideoAdapter.setMediaList(mediaList);
             play();
         }
-
     }
 
     public void setThumbnail(ImageView imageView, int position) {
-        String url = mVideoAdapter.mVideoList.get(position);
-        Bitmap thumb = ThumbnailUtils.createVideoThumbnail(url, MediaStore.Images.Thumbnails.MINI_KIND);
-        //imageView.setImageBitmap(thumb);
-        imageView.setImageResource(android.R.drawable.ic_dialog_map);
+        String imgUrl = mVideoAdapter.mVideoList.get(position);
+        Bitmap thumb = ThumbnailUtils.createVideoThumbnail(imgUrl, MediaStore.Images.Thumbnails.MINI_KIND);
+        imageView.setImageBitmap(thumb);
     }
 
 }
