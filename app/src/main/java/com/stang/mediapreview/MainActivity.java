@@ -27,6 +27,7 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
     public static final int PHOTOLIST_LOADER_ID = 1;
     public static final int VIDEOLIST_LOADER_ID = 2;
     public static final int PERMISSION_REQUEST_CODE = 1;
+
     private PagerAdapter tabAdapter;
     private ViewPager viewPager;
 
@@ -167,20 +168,4 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
     public static ArrayList<String> getVideoList(){
         return mVideoList;
     }
-
-//    @Override
-//    public boolean onCreateOptionsMenu(Menu menu) {
-//        getMenuInflater().inflate(R.menu.menu_main, menu);
-//        return true;
-//    }
-//
-//    @Override
-//    public boolean onOptionsItemSelected(MenuItem item) {
-//        int id = item.getItemId();
-//        if (id == R.id.action_settings) {
-//            return true;
-//        }
-//
-//        return super.onOptionsItemSelected(item);
-//    }
 }

@@ -56,18 +56,15 @@ public class PhotoPrevFragment extends Fragment{
         View view = inflater.inflate(R.layout.fragment_photo_prev, container, false);
 
         mImageView = (RoundedImageView) view.findViewById(R.id.imageView);
-
         mAttacher = new PhotoViewAttacher(mImageView, true);
-        //mAttacher.setMinimumScale(1);
-        //mAttacher.setScale(1);
-        mAttacher.update();
+        //mAttacher.update();
 
         mGridLayoutManager = new GridLayoutManager(getContext(), 5);
         mRecyclerView = (RecyclerView) view.findViewById(R.id.photoRecyclerView);
         mRecyclerView.setHasFixedSize(true);
         mRecyclerView.setLayoutManager(mGridLayoutManager);
 
-        mPhotoAdapter = new PhotoRecyclerViewAdapter(getContext(), null);
+        mPhotoAdapter = new PhotoRecyclerViewAdapter(getContext(), MainActivity.getPhotoList());
         mRecyclerView.setAdapter(mPhotoAdapter);
 
         setMediaList(MainActivity.getPhotoList());
@@ -116,7 +113,7 @@ public class PhotoPrevFragment extends Fragment{
 
         @Override
         public RecyclerViewHolders onCreateViewHolder(ViewGroup parent, int viewType) {
-            View layoutView = LayoutInflater.from(getContext()).inflate(R.layout.photo_card_view, null);
+            View layoutView = LayoutInflater.from(context).inflate(R.layout.photo_card_view, null);
             RecyclerViewHolders rcv = new RecyclerViewHolders(layoutView);
 
             return rcv;
@@ -174,10 +171,6 @@ public class PhotoPrevFragment extends Fragment{
             mImageView.setImageURI(Uri.parse(imgUrl));
             mAttacher.update();
         }
-    }
-
-    public ArrayList<String> getMediaList() {
-        return mPhotoAdapter.mPhotoList;
     }
 
     public void setImageThumbnail(ImageView imageView, int position) {

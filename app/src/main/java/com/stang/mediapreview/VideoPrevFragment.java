@@ -164,7 +164,13 @@ public class VideoPrevFragment extends Fragment {
 
     }
 
-    private void setPlaying(boolean statePlaying) {
+    @Override
+    public void onHiddenChanged(boolean hidden) {
+        setPlaying(false);
+        super.onHiddenChanged(hidden);
+    }
+
+    public void setPlaying(boolean statePlaying) {
         if(mMediaPlayer != null && isPlayerPrepared) {
             isPlaying = statePlaying;
             if(mMediaPlayer.isPlaying()) {
