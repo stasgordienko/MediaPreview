@@ -26,7 +26,7 @@ public class GalleryRecyclerViewAdapter extends RecyclerView.Adapter<GalleryRecy
     private ArrayList<String> mMediaList;
     private Context context;
     private OnClickListener mOnClickListener;
-    private View mSelectedViev;
+    private int mSelectedPosition = 0;
 
     public interface OnClickListener {
         void onClick(View view, int oldPosition, int newPosition);
@@ -50,6 +50,8 @@ public class GalleryRecyclerViewAdapter extends RecyclerView.Adapter<GalleryRecy
 
     @Override
     public void onBindViewHolder(RecyclerViewHolders holder, int position) {
+        holder.mPositionInMedialist = position;
+
         String imgUrl = getItem(position);
 
         ImageLoader.getInstance().displayImage(imgUrl, holder.mListThumbnailImageView);
@@ -59,6 +61,8 @@ public class GalleryRecyclerViewAdapter extends RecyclerView.Adapter<GalleryRecy
 //                .crossFade()
 //                .diskCacheStrategy(DiskCacheStrategy.NONE)
 //                .into(holder.mListThumbnailImageView);
+
+        holder.mListThumbnailImageView.setSelected(mSelectedPosition == position);
 
         Log.d(TAG, "onBindViewHolder, position=" + position + " url=" + imgUrl);
     }
@@ -86,31 +90,25 @@ public class GalleryRecyclerViewAdapter extends RecyclerView.Adapter<GalleryRecy
     }
 
 
-    public class RecyclerViewHolders extends RecyclerView.ViewHolder implements View.OnClickListener {
+    public class RecyclerViewHolders extends RecyclerView.ViewHolder {
 
         public RoundedImageView mListThumbnailImageView;
+        public int mPositionInMedialist;
 
         public RecyclerViewHolders(View itemView) {
             super(itemView);
-            itemView.setOnClickListener(this);
+            itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (mOnClickListener != null) {
+                        mOnClickListener.onClick(v, mSelectedPosition, mPositionInMedialist);
+                    }
+                    mSelectedPosition = mPositionInMedialist;
+                }
+            });
             mListThumbnailImageView = (RoundedImageView) itemView.findViewById(R.id.photo);
         }
 
-        @Override
-        public void onClick(View v) {
-            if (mOnClickListener != null) {
-                mOnClickListener.onClick(v, getOldPosition(), getAdapterPosition());
-            }
-
-            v.setSelected(true);
-
-            if (mSelectedViev != null && mSelectedViev.isShown()) {
-                mSelectedViev.setSelected(false);
-            }
-
-            mSelectedViev = v;
-        }
-
-    }
+     }
 }
 

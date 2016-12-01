@@ -147,6 +147,8 @@ public class VideoPrevFragment extends Fragment {
             @Override
             public void onClick(View view, int oldPosition, int newPosition) {
                 mSelectedPosition = newPosition;
+                mRecyclerView.findViewHolderForAdapterPosition(oldPosition).itemView.setSelected(false);
+                mRecyclerView.findViewHolderForAdapterPosition(newPosition).itemView.setSelected(true);
                 play();
             }
         });
