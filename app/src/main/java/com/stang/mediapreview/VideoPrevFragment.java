@@ -65,6 +65,7 @@ public class VideoPrevFragment extends Fragment {
     };
 
 
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -150,6 +151,7 @@ public class VideoPrevFragment extends Fragment {
 
         setMediaList(MainActivity.getVideoList());
 
+
         return view;
     }
 
@@ -172,6 +174,7 @@ public class VideoPrevFragment extends Fragment {
 
     public void setPlaying(boolean statePlaying) {
         if(mMediaPlayer != null && isPlayerPrepared) {
+            if(statePlaying == mMediaPlayer.isPlaying()) return;
             isPlaying = statePlaying;
             if(mMediaPlayer.isPlaying()) {
                 mMediaPlayer.pause();
