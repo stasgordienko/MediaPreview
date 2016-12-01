@@ -1,21 +1,27 @@
-package com.stang.mediapreview;
+package com.stang.mediapreview.adapters;
 
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
 
+import com.stang.mediapreview.ui.MainActivity;
+import com.stang.mediapreview.ui.PhotoPrevFragment;
+import com.stang.mediapreview.ui.VideoPrevFragment;
+
 /**
  * Created by Stanislav on 22.11.2016.
  */
 
-public class PagerAdapter extends FragmentStatePagerAdapter {
+public class TabPagerAdapter extends FragmentStatePagerAdapter {
     public static final String TAG = MainActivity.TAG;
+    public static final int PHOTO_TAB = 0;
+    public static final int VIDEO_TAB = 1;
 
     int mNumOfTabs;
     public PhotoPrevFragment photoTab;
     public VideoPrevFragment videoTab;
 
-    public PagerAdapter(FragmentManager fm) {
+    public TabPagerAdapter(FragmentManager fm) {
         super(fm);
         this.mNumOfTabs = 2;
     }
@@ -24,10 +30,10 @@ public class PagerAdapter extends FragmentStatePagerAdapter {
     public Fragment getItem(int position) {
 
         switch (position) {
-            case 0:
+            case PHOTO_TAB:
                 photoTab = new PhotoPrevFragment();
                 return photoTab;
-            case 1:
+            case VIDEO_TAB:
                 videoTab = new VideoPrevFragment();
                 return videoTab;
             default:

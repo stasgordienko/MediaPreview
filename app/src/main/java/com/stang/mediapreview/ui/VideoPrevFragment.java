@@ -1,15 +1,13 @@
-package com.stang.mediapreview;
+package com.stang.mediapreview.ui;
 
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.SurfaceTexture;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
-import android.media.ThumbnailUtils;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
-import android.provider.MediaStore;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -21,10 +19,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 
-import com.bumptech.glide.Glide;
-import com.bumptech.glide.load.engine.DiskCacheStrategy;
-import com.makeramen.roundedimageview.RoundedImageView;
+import com.stang.mediapreview.R;
+import com.stang.mediapreview.adapters.GalleryRecyclerViewAdapter;
+
 import org.florescu.android.rangeseekbar.RangeSeekBar;
+
 import java.util.ArrayList;
 
 
@@ -36,7 +35,7 @@ public class VideoPrevFragment extends Fragment {
     private RecyclerView mRecyclerView;
     private TextureView mVideoView;
     private GridLayoutManager mGridLayoutManager;
-    private VideoPrevFragment.VideoRecyclerViewAdapter mVideoAdapter;
+    private GalleryRecyclerViewAdapter mVideoAdapter;
     private MediaPlayer mMediaPlayer;
     private Surface mVideoSurface;
     private RangeSeekBar<Integer> mRangeSeekBar;
@@ -48,9 +47,6 @@ public class VideoPrevFragment extends Fragment {
 
     private Handler mHandler = new Handler();
 
-    public VideoPrevFragment() {
-        // Required empty public constructor
-    }
 
     private final Runnable mUpdater = new Runnable() {
         public void run() {
@@ -65,11 +61,15 @@ public class VideoPrevFragment extends Fragment {
     };
 
 
+    public VideoPrevFragment() {
+        // Required empty public constructor
+    }
+
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View view =  inflater.inflate(R.layout.fragment_video_prev, container, false);
+        View view = inflater.inflate(R.layout.fragment_video_prev, container, false);
         mVideoView = (TextureView) view.findViewById(R.id.videoView);
         mVideoView.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -82,8 +82,8 @@ public class VideoPrevFragment extends Fragment {
             public void onSurfaceTextureAvailable(SurfaceTexture surfaceTexture, int width, int height) {
                 mVideoSurface = new Surface(surfaceTexture);
                 try {
-                    if(mMediaPlayer == null) {
-                        mMediaPlayer= new MediaPlayer();
+                    if (mMediaPlayer == null) {
+                        mMediaPlayer = new MediaPlayer();
                     }
                     mMediaPlayer.setSurface(mVideoSurface);
                     mMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
@@ -134,10 +134,20 @@ public class VideoPrevFragment extends Fragment {
         mRangeSeekBar.setOnRangeSeekBarChangeListener(new RangeSeekBar.OnRangeSeekBarChangeListener<Integer>() {
             @Override
             public void onRangeSeekBarValuesChanged(RangeSeekBar<?> bar, Integer minValue, Integer maxValue) {
-                if(mStartPosition != mRangeSeekBar.getSelectedMinValue()) {
+                if (mStartPosition != mRangeSeekBar.getSelectedMinValue()) {
                     mStartPosition = mRangeSeekBar.getSelectedMinValue();
                     seekToStart();
                 }
+            }
+        });
+
+
+        mVideoAdapter = new GalleryRecyclerViewAdapter(getContext(), null);
+        mVideoAdapter.setOnClickListener(new GalleryRecyclerViewAdapter.OnClickListener() {
+            @Override
+            public void onClick(View view, int oldPosition, int newPosition) {
+                mSelectedPosition = newPosition;
+                play();
             }
         });
 
@@ -145,19 +155,16 @@ public class VideoPrevFragment extends Fragment {
         mRecyclerView = (RecyclerView) view.findViewById(R.id.videoRecyclerView);
         mRecyclerView.setHasFixedSize(true);
         mRecyclerView.setLayoutManager(mGridLayoutManager);
-
-        mVideoAdapter = new VideoRecyclerViewAdapter(getContext(), null);
         mRecyclerView.setAdapter(mVideoAdapter);
 
         setMediaList(MainActivity.getVideoList());
-
 
         return view;
     }
 
     private void update() {
-        int endPosition = (int)((float)mMediaPlayer.getDuration() * ((float) mRangeSeekBar.getSelectedMaxValue() / 100));
-        if(mMediaPlayer.getCurrentPosition() < endPosition) {
+        int endPosition = (int) ((float) mMediaPlayer.getDuration() * ((float) mRangeSeekBar.getSelectedMaxValue() / 100));
+        if (mMediaPlayer.getCurrentPosition() < endPosition) {
             mHandler.removeCallbacks(mUpdater);
             mHandler.postDelayed(mUpdater, UPDATER_DELAY);
         } else {
@@ -173,15 +180,15 @@ public class VideoPrevFragment extends Fragment {
     }
 
     public void setPlaying(boolean statePlaying) {
-        if(mMediaPlayer != null && isPlayerPrepared) {
-            if(statePlaying == mMediaPlayer.isPlaying()) return;
+        if (mMediaPlayer != null && isPlayerPrepared) {
+            if (statePlaying == mMediaPlayer.isPlaying()) return;
             isPlaying = statePlaying;
-            if(mMediaPlayer.isPlaying()) {
+            if (mMediaPlayer.isPlaying()) {
                 mMediaPlayer.pause();
             } else {
-                int endPosition = (int)((float)mMediaPlayer.getDuration() * ((float) mRangeSeekBar.getSelectedMaxValue() / 100));
-                if(mMediaPlayer.getCurrentPosition() >= endPosition) {
-                    int startPosition = (int)((float)mMediaPlayer.getDuration() * ((float) mRangeSeekBar.getSelectedMinValue() / 100));
+                int endPosition = (int) ((float) mMediaPlayer.getDuration() * ((float) mRangeSeekBar.getSelectedMaxValue() / 100));
+                if (mMediaPlayer.getCurrentPosition() >= endPosition) {
+                    int startPosition = (int) ((float) mMediaPlayer.getDuration() * ((float) mRangeSeekBar.getSelectedMinValue() / 100));
                     mMediaPlayer.seekTo(startPosition);
                 }
                 mMediaPlayer.start();
@@ -190,12 +197,11 @@ public class VideoPrevFragment extends Fragment {
             }
         }
         Log.d(TAG, "setPlaying " + statePlaying);
-        //
     }
 
-    private void seekToStart() {
-        if(isPlayerPrepared) {
-            int seekPosition = (int)((float)mMediaPlayer.getDuration() * ((float)mStartPosition / 100));
+    public void seekToStart() {
+        if (isPlayerPrepared) {
+            int seekPosition = (int) ((float) mMediaPlayer.getDuration() * ((float) mStartPosition / 100));
             mMediaPlayer.seekTo(seekPosition);
         }
     }
@@ -230,80 +236,18 @@ public class VideoPrevFragment extends Fragment {
     }
 
 
-    public class VideoRecyclerViewAdapter extends RecyclerView.Adapter<VideoPrevFragment.RecyclerViewHolders> {
-        private ArrayList<String> mVideoList;
-        private Context context;
-
-
-        public VideoRecyclerViewAdapter(Context context, ArrayList<String> itemList) {
-            this.mVideoList = itemList;
-            this.context = context;
-        }
-
-        @Override
-        public VideoPrevFragment.RecyclerViewHolders onCreateViewHolder(ViewGroup parent, int viewType) {
-            View layoutView = LayoutInflater.from(getContext()).inflate(R.layout.photo_card_view, null);
-            VideoPrevFragment.RecyclerViewHolders rcv = new VideoPrevFragment.RecyclerViewHolders(layoutView);
-            return rcv;
-        }
-
-        @Override
-        public void onBindViewHolder(VideoPrevFragment.RecyclerViewHolders holder, int position) {
-            //setThumbnail(holder.mListImageView, position);
-            holder.mListImageView.setSelected(position == mSelectedPosition);
-            String imgUrl =  mVideoAdapter.mVideoList.get(position);
-            Log.d(TAG, "onBindViewHolder, position=" + position + " url=" + imgUrl);
-            Glide.with(getContext()).load(Uri.parse(imgUrl).toString())
-                    .thumbnail(0.5f)
-                    .crossFade()
-                    .diskCacheStrategy(DiskCacheStrategy.NONE)
-                    .into(holder.mListImageView);
-        }
-
-        @Override
-        public int getItemCount() {
-            if(this.mVideoList != null) {
-                return this.mVideoList.size();
-            } else {
-                return 0;
-            }
-
-        }
-
-        public void setMediaList(ArrayList<String> mediaList) {
-            mVideoList = mediaList;
-            notifyDataSetChanged();
-        }
+    public boolean isPlaing() {
+        return isPlaying;
     }
 
 
-    public class RecyclerViewHolders extends RecyclerView.ViewHolder implements View.OnClickListener {
-
-        public RoundedImageView mListImageView;
-
-        public RecyclerViewHolders(View itemView) {
-            super(itemView);
-            itemView.setOnClickListener(this);
-            mListImageView = (RoundedImageView) itemView.findViewById(R.id.photo);
-        }
-
-        @Override
-        public void onClick(View v) {
-            v.setSelected(true);
-            mVideoAdapter.notifyItemChanged(mSelectedPosition);
-            mSelectedPosition = getAdapterPosition();
-            play();
-    }
-
-     }
-
-    public void play(){
+    public void play() {
         boolean startPlayAfterPrepare = (isPlayerPrepared && mMediaPlayer.isPlaying());
         isPlayerPrepared = false;
-        if(mMediaPlayer != null) {
+        if (mMediaPlayer != null) {
             mMediaPlayer.reset();
             try {
-                mMediaPlayer.setDataSource(mVideoAdapter.mVideoList.get(mSelectedPosition));
+                mMediaPlayer.setDataSource(mVideoAdapter.getItem(mSelectedPosition));
                 mMediaPlayer.prepare();
 
                 //calc video surface view size
@@ -311,15 +255,14 @@ public class VideoPrevFragment extends Fragment {
                 int videoHeight = mMediaPlayer.getVideoHeight();
                 android.view.ViewGroup.LayoutParams lp = mVideoView.getLayoutParams();
                 int screenWidth = mVideoView.getWidth();
-                lp.height = (int) (((float)videoHeight / (float)videoWidth) * (float)screenWidth);
+                lp.height = (int) (((float) videoHeight / (float) videoWidth) * (float) screenWidth);
                 mVideoView.setLayoutParams(lp);
 
-                int startPosition = (int)((float)mMediaPlayer.getDuration() * ((float) mRangeSeekBar.getSelectedMinValue() / 100));
+                int startPosition = (int) ((float) mMediaPlayer.getDuration() * ((float) mRangeSeekBar.getSelectedMinValue() / 100));
                 isPlayerPrepared = true;
                 mMediaPlayer.seekTo(startPosition);
-                if(startPlayAfterPrepare) {
-                    mMediaPlayer.start();
-
+                if (startPlayAfterPrepare) {
+                    setPlaying(true);
                 }
             } catch (Exception e) {
                 // todo
@@ -329,19 +272,12 @@ public class VideoPrevFragment extends Fragment {
     }
 
 
-
     public void setMediaList(ArrayList<String> mediaList) {
-        if(mediaList != null && mediaList.size() > 0) {
+        if (mediaList != null && mediaList.size() > 0) {
             mSelectedPosition = 0;
             mVideoAdapter.setMediaList(mediaList);
             play();
         }
-    }
-
-    public void setThumbnail(ImageView imageView, int position) {
-        String imgUrl = mVideoAdapter.mVideoList.get(position);
-        Bitmap thumb = ThumbnailUtils.createVideoThumbnail(imgUrl, MediaStore.Images.Thumbnails.MINI_KIND);
-        imageView.setImageBitmap(thumb);
     }
 
 }

@@ -13,7 +13,7 @@
         android:screenOrientation="portrait"
         android:theme="@style/AppTheme"
         android:name=".MediaPreviewApplication">
-        <activity android:name=".MainActivity"
+        <activity android:name=".ui.MainActivity"
             android:windowSoftInputMode="stateHidden|adjustPan"
             android:screenOrientation="portrait">
             <intent-filter>

@@ -2,14 +2,15 @@ package com.stang.mediapreview;
 
 import android.content.AsyncTaskLoader;
 import android.content.ContentResolver;
-import android.content.ContentUris;
 import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
-import android.provider.MediaStore;
 
 import android.util.Log;
+
+import com.stang.mediapreview.ui.MainActivity;
+
 import java.util.ArrayList;
 
 /**

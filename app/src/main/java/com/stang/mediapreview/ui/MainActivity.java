@@ -1,4 +1,4 @@
-package com.stang.mediapreview;
+package com.stang.mediapreview.ui;
 
 import android.Manifest;
 import android.content.Loader;
@@ -17,10 +17,14 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
+import com.stang.mediapreview.MediaListLoader;
+import com.stang.mediapreview.R;
+import com.stang.mediapreview.adapters.TabPagerAdapter;
+
 import java.util.ArrayList;
 
 
-public class MainActivity extends AppCompatActivity implements ActivityCompat.OnRequestPermissionsResultCallback{
+public class MainActivity extends AppCompatActivity implements ActivityCompat.OnRequestPermissionsResultCallback {
     public static final String TAG = "APP";
     public final static Uri PHOTO_DATA_URI = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
     public final static Uri VIDEO_DATA_URI = MediaStore.Video.Media.EXTERNAL_CONTENT_URI;
@@ -28,7 +32,9 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
     public static final int VIDEOLIST_LOADER_ID = 2;
     public static final int PERMISSION_REQUEST_CODE = 1;
 
-    private PagerAdapter tabAdapter;
+    private boolean statePlaing = false;
+
+    private TabPagerAdapter tabAdapter;
     private ViewPager viewPager;
 
     public volatile static ArrayList<String> mPhotoList;
@@ -40,10 +46,9 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
         setContentView(R.layout.activity_main);
 
         viewPager = (ViewPager) findViewById(R.id.pager);
-        tabAdapter = new PagerAdapter
+        tabAdapter = new TabPagerAdapter
                 (getSupportFragmentManager());
         viewPager.setAdapter(tabAdapter);
-
         viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
             @Override
             public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
@@ -52,7 +57,12 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
 
             @Override
             public void onPageSelected(int position) {
-                tabAdapter.videoTab.setPlaying(false);
+                if (position != TabPagerAdapter.VIDEO_TAB) {
+                    statePlaing = tabAdapter.videoTab.isPlaing();
+                    tabAdapter.videoTab.setPlaying(false);
+                } else {
+                    tabAdapter.videoTab.setPlaying(statePlaing);
+                }
             }
 
             @Override
@@ -61,11 +71,11 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
             }
         });
 
-        if(ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.READ_EXTERNAL_STORAGE)
+        if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.READ_EXTERNAL_STORAGE)
                 == PackageManager.PERMISSION_GRANTED) {
             onPermissionGranted();
         } else {
-            if(ActivityCompat.shouldShowRequestPermissionRationale(MainActivity.this,
+            if (ActivityCompat.shouldShowRequestPermissionRationale(MainActivity.this,
                     Manifest.permission.READ_EXTERNAL_STORAGE)) {
                 showSnackbarRequestPermission();
             } else {
@@ -76,7 +86,7 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
 
     }
 
-    private void onPermissionGranted(){
+    private void onPermissionGranted() {
         loadMediaListFromExtStorage();
     }
 
@@ -87,21 +97,21 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
             if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 Toast.makeText(MainActivity.this, getString(R.string.permission_granted), Toast.LENGTH_LONG).show();
                 onPermissionGranted();
-            }   else {
+            } else {
                 showSnackbarRequestPermission();
             }
         }
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 
-    private void requestReadExtStoragePermission(){
+    private void requestReadExtStoragePermission() {
         ActivityCompat.requestPermissions(MainActivity.this,
                 new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
                 PERMISSION_REQUEST_CODE);
     }
 
 
-    private void showSnackbarRequestPermission(){
+    private void showSnackbarRequestPermission() {
         final String message = getString(R.string.storage_permission_needed);
         Snackbar.make(findViewById(android.R.id.content), message, Snackbar.LENGTH_INDEFINITE)
                 .setAction(getString(R.string.grant), new View.OnClickListener() {
@@ -114,7 +124,7 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
     }
 
 
-    public void loadMediaListFromExtStorage(){
+    public void loadMediaListFromExtStorage() {
         Bundle bndl_photo = new Bundle();
         bndl_photo.putString(MediaListLoader.ARGS_MEDIALIST_URI, PHOTO_DATA_URI.toString());
         bndl_photo.putString(MediaListLoader.ARGS_MEDIALIST_COLUMN, MediaStore.Images.Media.DATA);
@@ -146,7 +156,7 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
         @Override
         public void onLoadFinished(Loader<ArrayList<String>> loader, ArrayList<String> data) {
             mPhotoList = data;
-            if(tabAdapter.photoTab != null) {
+            if (tabAdapter.photoTab != null) {
                 tabAdapter.photoTab.setMediaList(data);
                 Log.d(TAG, "PhotoList loader ENDS...");
             }
@@ -171,18 +181,18 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
         @Override
         public void onLoadFinished(Loader<ArrayList<String>> loader, ArrayList<String> data) {
             mVideoList = data;
-            if(tabAdapter.videoTab != null) {
+            if (tabAdapter.videoTab != null) {
                 tabAdapter.videoTab.setMediaList(data);
                 Log.d(TAG, "VideoList loader ENDS...");
             }
         }
     };
 
-    public static ArrayList<String> getPhotoList(){
+    public static ArrayList<String> getPhotoList() {
         return mPhotoList;
     }
 
-    public static ArrayList<String> getVideoList(){
+    public static ArrayList<String> getVideoList() {
         return mVideoList;
     }
 }
